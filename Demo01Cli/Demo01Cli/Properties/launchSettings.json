@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "List": {
+      "commandName": "Project",
+      "commandLineArgs": "list --run-id 3185445164 --repo edumserrano/share-jobs-data --token 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"
+    },
+    "Download": {
+      "commandName": "Project",
+      "commandLineArgs": "download --artefact-id 3865214059 --repo edumserrano/share-jobs-data --token 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"
+    }
+  }
+  }
