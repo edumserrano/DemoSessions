@@ -1,13 +1,10 @@
 ﻿using CliFx;
 using CliFx.Attributes;
 using CliFx.Infrastructure;
-using System;
-using System.Collections.Generic;
+using Demo01Cli.Models;
 using System.IO.Compression;
-using System.Linq;
-using System.Net;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace Demo01Cli
 {
@@ -24,12 +21,23 @@ namespace Demo01Cli
         {
 
         }
+        [CommandOption(
+    "run-id",
+    IsRequired = true,
+    Description = "The run id to get the artefacts from")]
+        public string RunId { get; init; }
 
         [CommandOption(
             "artefact-id",
             IsRequired = true,
             Description = "The artefact id to get the artefacts from")]
         public string ArtefactId { get; init; }
+
+        [CommandOption(
+          "artefact-name",
+          IsRequired = false,
+          Description = "The artefact name to get the artefacts from")]
+        public string ArtefactName { get; init; }
 
         [CommandOption(
             "repo",
@@ -56,11 +64,23 @@ namespace Demo01Cli
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {Token}");
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "Demo");
 
-            var result = await _httpClient.GetAsync($"https://api.github.com/repos/{Repo}/actions/artifacts/{ArtefactId}/zip");
-            var responseStream = await result.Content.ReadAsStreamAsync();
-            if(!result.IsSuccessStatusCode && responseStream.Length == 0)
+            string artefactId = ArtefactId;
+
+            if (artefactId == null)
             {
-                console.Output.Write($"Oh dear, user, the thing with ID {ArtefactId} you have searched for could not be found.");
+                var resultArtefactList = await _httpClient.GetStringAsync($"https://api.github.com/repos/{Repo}/actions/runs/{RunId}/artifacts");
+                var resultArtefactListModels = JsonSerializer.Deserialize<ListResponseModel>(resultArtefactList);
+
+                artefactId = resultArtefactListModels.artifacts
+                    .Where(x => x.name == ArtefactName)
+                    .Select(x => x.id.ToString())
+                    .Single();
+            }
+            var result = await _httpClient.GetAsync($"https://api.github.com/repos/{Repo}/actions/artifacts/{artefactId}/zip");
+            var responseStream = await result.Content.ReadAsStreamAsync();
+            if (!result.IsSuccessStatusCode && responseStream.Length == 0)
+            {
+                console.Output.Write($"Oh dear, user, the thing with ID {artefactId} you have searched for could not be found.");
                 //Brodie broke the code!!!!
                 return;
             }
