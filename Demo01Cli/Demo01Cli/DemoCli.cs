@@ -1,5 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
-using CliFx;
+﻿using CliFx;
 //3 commands 
 
 public class DemoCli
