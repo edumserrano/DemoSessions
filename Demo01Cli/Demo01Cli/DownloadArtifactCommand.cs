@@ -22,9 +22,9 @@ namespace Demo01Cli
 
         }
         [CommandOption(
-    "run-id",
-    IsRequired = true,
-    Description = "The run id to get the artefacts from")]
+            "run-id",
+            IsRequired = true,
+            Description = "The run id to get the artefacts from")]
         public string RunId { get; init; }
 
         [CommandOption(

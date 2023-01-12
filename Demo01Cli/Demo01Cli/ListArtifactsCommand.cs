@@ -1,19 +1,22 @@
 ﻿using CliFx;
 using CliFx.Attributes;
 using CliFx.Infrastructure;
+using Demo01Cli.Services;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Demo01Cli;
 
 [Command("list")]
 public class ListArtifactsCommand : ICommand
 {
-    private HttpClient _httpClient;
+    private ListService _listService;
 
-    public ListArtifactsCommand(HttpClient client)
+    public ListArtifactsCommand(ListService listService)
     {
-        _httpClient = client;
+        _listService = listService;
     }
-    public ListArtifactsCommand(): this (new HttpClient())
+    public ListArtifactsCommand(): this (new ListService(new HttpClient()))
     {
 
     }
@@ -38,18 +41,8 @@ public class ListArtifactsCommand : ICommand
 
     public async ValueTask ExecuteAsync(IConsole console)
     {
-        //      curl \
-        //-H "Accept: application/vnd.github+json" \
-        //-H "Authorization: Bearer <YOUR-TOKEN>" \
-        //https://api.github.com/repos/OWNER/REPO/actions/artifacts
-
-        //https://github.com/edumserrano/share-jobs-data/actions/runs/3185445164
-
-        _httpClient.DefaultRequestHeaders.Add("Accept", "application/vnd.github+json");
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {Token}");
-        _httpClient.DefaultRequestHeaders.Add("User-Agent", "Demo");
-
-        var result = await _httpClient.GetStringAsync($"https://api.github.com/repos/{Repo}/actions/runs/{RunId}/artifacts");
-        console.Output.WriteLine(result);
+        var result = await _listService.ListArtifactByRunId(RunId, Token, Repo);
+        var data = JsonSerializer.Serialize(result);
+        console.Output.WriteLine(data);
     }
 }
